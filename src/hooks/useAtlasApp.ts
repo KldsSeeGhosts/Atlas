@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  makeDefaultState,
+  clearStoredAtlasData,
+  makeBlankState,
   makeEmptyWeek,
   parseImport,
   saveState,
@@ -159,11 +160,12 @@ export function useAtlasApp() {
       pushToast('success', `Week ${currentWeekId} cleared`)
     },
     resetAtlasData: () => {
+      clearStoredAtlasData()
       setState({
-        ...makeDefaultState(),
+        ...makeBlankState(),
         themeMode: state.themeMode,
       })
-      pushToast('success', 'Atlas data reset to defaults')
+      pushToast('success', 'All Atlas data reset to a blank state')
     },
     exportAtlasData: () => {
       const payload = JSON.stringify(createExportEnvelope(state), null, 2)

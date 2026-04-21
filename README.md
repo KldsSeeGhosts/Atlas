@@ -30,6 +30,36 @@ Optional type check:
 npm run typecheck
 ```
 
+## Version history and rollback
+
+Initialize local Git history:
+
+```bash
+git init
+git add .
+git commit -m "chore: baseline atlas snapshot"
+```
+
+Recommended workflow for safe iteration:
+
+```bash
+git switch -c feat/<short-name>
+# make changes
+git add -A
+git commit -m "feat: <summary>"
+```
+
+Create a restore point tag before bigger UI changes:
+
+```bash
+git tag before-ui-pass-1
+```
+
+Rollback options:
+- Undo the latest commit safely: `git revert HEAD`
+- Restore to a known commit locally: `git reset --hard <commit-hash>`
+- Return to a tagged snapshot: `git reset --hard before-ui-pass-1`
+
 ## Data and storage
 
 Atlas uses:

@@ -149,6 +149,16 @@ export function makeDefaultState(): AtlasState {
   }
 }
 
+export function makeBlankState(): AtlasState {
+  return {
+    schemaVersion: ATLAS_SCHEMA_VERSION,
+    currentWeek: 1,
+    themeMode: 'system',
+    settings: { ...DEFAULT_ANALYSIS_SETTINGS },
+    weeks: { '1': makeEmptyWeek(false) },
+  }
+}
+
 export function toNumber(value: string): number | null {
   const parsed = Number.parseFloat(String(value).replace(/,/g, '').trim())
   return Number.isFinite(parsed) ? parsed : null
@@ -311,6 +321,11 @@ export function loadState(): AtlasState {
 
 export function saveState(state: AtlasState): void {
   localStorage.setItem(ATLAS_STORAGE_KEY, JSON.stringify(state))
+}
+
+export function clearStoredAtlasData(): void {
+  localStorage.removeItem(ATLAS_STORAGE_KEY)
+  localStorage.removeItem(LEGACY_STORAGE_KEY)
 }
 
 export function createExportEnvelope(state: AtlasState): AtlasExportEnvelope {

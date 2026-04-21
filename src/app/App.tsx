@@ -115,13 +115,6 @@ export default function App() {
               <Button onClick={atlas.actions.nextWeek} aria-label="Next week">
                 Next
               </Button>
-              <Button variant="quiet" onClick={() => setSettingsOpen(true)} aria-label="Open settings">
-                <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <circle cx="12" cy="12" r="3.5" />
-                  <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7" />
-                </svg>
-                Settings
-              </Button>
             </div>
           </Card>
 
@@ -185,6 +178,17 @@ export default function App() {
                 <strong className="text-text-primary">{formatMaybe(atlas.metrics.benchE1RM, 1, ' lb')}</strong>
               </div>
             </div>
+          </Card>
+
+          <Card className="bg-surface-1/95">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Controls</p>
+            <Button className="mt-2 w-full" variant="quiet" onClick={() => setSettingsOpen(true)} aria-label="Open settings">
+              <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="12" cy="12" r="3.5" />
+                <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7" />
+              </svg>
+              Settings
+            </Button>
           </Card>
 
           <Card className="bg-surface-1/95">
