@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AiGains Atelier — Local-First Training Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06070b;
+      --surface: rgba(14, 17, 27, 0.88);
+      --surface-2: rgba(19, 24, 36, 0.88);
+      --surface-3: rgba(28, 35, 52, 0.88);
+      --line: rgba(255,255,255,0.08);
+      --line-strong: rgba(255,255,255,0.14);
+      --text: #f4f7fb;
+      --muted: #9aa6bf;
+      --soft: #c9d4e9;
+      --amber: #f7b95e;
+      --teal: #48dfc1;
+      --violet: #9b7bff;
+      --rose: #ff7d9b;
+      --sky: #6eb7ff;
+      --lime: #9be15d;
+      --shadow: 0 24px 80px rgba(0,0,0,0.34);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --sidebar-w: 290px;
+      --rail-w: 360px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(72, 223, 193, 0.10), transparent 30%),
+        radial-gradient(circle at 85% 12%, rgba(155, 123, 255, 0.12), transparent 32%),
+        radial-gradient(circle at 80% 80%, rgba(255, 125, 155, 0.10), transparent 26%),
+        linear-gradient(180deg, #080a11 0%, #06070b 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(90px);
+      opacity: 0.5;
+    }
+    body::before {
+      width: 40vw;
+      height: 40vw;
+      left: -10vw;
+      top: 18vh;
+      background: rgba(72,223,193,0.08);
+      animation: driftA 14s ease-in-out infinite alternate;
+    }
+    body::after {
+      width: 34vw;
+      height: 34vw;
+      right: -6vw;
+      top: 8vh;
+      background: rgba(155,123,255,0.08);
+      animation: driftB 18s ease-in-out infinite alternate;
+    }
+    @keyframes driftA { from { transform: translateY(-8px); } to { transform: translateY(18px); } }
+    @keyframes driftB { from { transform: translateY(14px); } to { transform: translateY(-10px); } }
+
+    a { color: inherit; }
+    button, input, textarea, select { font: inherit; }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      background: rgba(10, 12, 19, 0.7);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px) saturate(140%);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      border-radius: var(--radius-xl);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background:
+        linear-gradient(155deg, rgba(72,223,193,0.95), rgba(110,183,255,0.75) 45%, rgba(155,123,255,0.85));
+      display: grid;
+      place-items: center;
+      color: #061017;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      box-shadow: 0 12px 30px rgba(72,223,193,0.2);
+    }
+    .brand-copy { min-width: 0; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--soft);
+      background: rgba(255,255,255,0.03);
+    }
+    .brand-copy h1 {
+      margin: 8px 0 2px;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: clamp(1.2rem, 2vw, 1.6rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+    .brand-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .week-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+    }
+    .icon-btn,
+    .pill-btn,
+    .ghost-btn,
+    .primary-btn,
+    .danger-btn {
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+    }
+    .icon-btn:hover,
+    .pill-btn:hover,
+    .ghost-btn:hover,
+    .primary-btn:hover,
+    .danger-btn:hover { transform: translateY(-1px); }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    .week-label {
+      min-width: 110px;
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--soft);
+    }
+    .pill-btn, .ghost-btn, .primary-btn, .danger-btn {
+      padding: 11px 16px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .pill-btn, .ghost-btn {
+      background: rgba(255,255,255,0.04);
+      color: var(--soft);
+      border: 1px solid var(--line);
+    }
+    .primary-btn {
+      background: linear-gradient(135deg, rgba(72,223,193,0.95), rgba(110,183,255,0.9));
+      color: #041118;
+      box-shadow: 0 14px 30px rgba(72,223,193,0.18);
+    }
+    .danger-btn {
+      background: rgba(255, 125, 155, 0.08);
+      color: #ffc0cd;
+      border: 1px solid rgba(255,125,155,0.18);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(260px, var(--sidebar-w)) minmax(0, 1fr) minmax(300px, var(--rail-w));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stack { display: grid; gap: 18px; }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17, 21, 32, 0.92), rgba(10, 13, 21, 0.88));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px) saturate(145%);
+      -webkit-backdrop-filter: blur(20px) saturate(145%);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .panel-inner { padding: 20px; }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 20px 20px 0;
+    }
+    .panel-header h2,
+    .panel-header h3 {
+      margin: 0;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .panel-header h2 { font-size: clamp(1.3rem, 2vw, 1.75rem); }
+    .panel-header h3 { font-size: 1.08rem; }
+    .panel-header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.92rem;
+      max-width: 58ch;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      padding: 20px;
+    }
+    .metric-card {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.07);
+      min-height: 130px;
+    }
+    .metric-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -25% -60% auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 60%);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .metric-value {
+      margin-top: 14px;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      line-height: 0.95;
+      font-weight: 800;
+      letter-spacing: -0.07em;
+    }
+    .metric-sub {
+      margin-top: 8px;
+      color: var(--soft);
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+    .accent-teal .metric-value { color: var(--teal); }
+    .accent-violet .metric-value { color: var(--violet); }
+    .accent-amber .metric-value { color: var(--amber); }
+    .accent-rose .metric-value { color: var(--rose); }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(115deg, rgba(72,223,193,0.08), transparent 35%),
+        linear-gradient(290deg, rgba(155,123,255,0.10), transparent 40%),
+        linear-gradient(180deg, rgba(255,255,255,0.01), transparent 45%);
+      pointer-events: none;
+    }
+    .hero-top {
+      padding: 22px 20px 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.9fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .hero-copy {
+      padding: 22px;
+      border-radius: calc(var(--radius-xl) - 6px);
+      border: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    }
+    .hero-copy h2 {
+      margin: 12px 0 12px;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+      max-width: 10ch;
+    }
+    .hero-copy p {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--soft);
+      line-height: 1.65;
+      font-size: 0.97rem;
+    }
+    .hero-tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--soft);
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .hero-spotlight {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-radius: calc(var(--radius-xl) - 6px);
+      border: 1px solid rgba(255,255,255,0.06);
+      background:
+        linear-gradient(180deg, rgba(14, 17, 27, 0.92), rgba(14, 17, 27, 0.84)),
+        radial-gradient(circle at top right, rgba(72,223,193,0.18), transparent 45%);
+    }
+    .spotlight-card {
+      padding: 14px 14px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+    }
+    .spotlight-card .label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .spotlight-card .value {
+      margin-top: 10px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+    .spotlight-card p {
+      margin: 8px 0 0;
+      color: var(--soft);
+      line-height: 1.45;
+      font-size: 0.88rem;
+    }
+
+    .sidebar-card {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .section-title h3 {
+      margin: 0;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: 1rem;
+      letter-spacing: -0.04em;
+    }
+    .subtle {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 10px;
+    }
+    .nav-item {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+    }
+    .nav-item:hover,
+    .nav-item.active {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.13);
+      background: rgba(255,255,255,0.055);
+    }
+    .nav-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .nav-kicker {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .nav-title {
+      margin-top: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+    .nav-focus {
+      margin-top: 6px;
+      color: var(--soft);
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+    .nav-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .mini-chip {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.05);
+      color: var(--soft);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .split-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .mini-stat {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .mini-stat .label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .mini-stat .value {
+      margin-top: 10px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+    }
+
+    .main-stack { display: grid; gap: 18px; }
+    .session-deck {
+      display: grid;
+      gap: 16px;
+      padding: 20px;
+    }
+    .session-card {
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+      overflow: hidden;
+    }
+    .session-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.015));
+    }
+    .session-title-wrap {
+      display: grid;
+      gap: 7px;
+    }
+    .session-day {
+      font-size: 0.74rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .session-title {
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: clamp(1.1rem, 2vw, 1.45rem);
+      letter-spacing: -0.05em;
+      margin: 0;
+    }
+    .session-sub {
+      color: var(--soft);
+      line-height: 1.45;
+      font-size: 0.91rem;
+      max-width: 65ch;
+    }
+    .session-accent {
+      min-width: 136px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+    .session-accent .label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 700;
+    }
+    .session-accent .value {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .session-meta {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      padding: 0 18px 18px;
+    }
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+    .field label {
+      font-size: 0.74rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      padding: 12px 13px;
+      outline: none;
+      transition: border-color 0.16s ease, background 0.16s ease;
+    }
+    .field textarea { min-height: 92px; resize: vertical; }
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: rgba(110,183,255,0.55);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .exercise-list {
+      display: grid;
+      gap: 12px;
+      padding: 0 18px 18px;
+    }
+    .exercise-card {
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.025);
+      overflow: hidden;
+    }
+    .exercise-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .exercise-title {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: -0.03em;
+    }
+    .exercise-cue {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+    .exercise-schema {
+      text-align: right;
+      min-width: 124px;
+    }
+    .exercise-schema .main {
+      font-weight: 800;
+      font-size: 1.02rem;
+      letter-spacing: -0.03em;
+    }
+    .exercise-schema .sub {
+      margin-top: 6px;
+      color: var(--soft);
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .set-grid {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+    .set-row {
+      display: grid;
+      grid-template-columns: 70px 1fr 1fr 100px 1.25fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .set-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      color: var(--soft);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .inline-field {
+      display: grid;
+      gap: 5px;
+    }
+    .inline-field span {
+      color: var(--muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .inline-field input {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      padding: 11px 12px;
+      outline: none;
+    }
+    .inline-field input:focus {
+      border-color: rgba(110,183,255,0.55);
+      background: rgba(255,255,255,0.07);
+    }
+    .set-row .note { min-width: 0; }
+
+    .nutrition-grid {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+    .daily-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .day-block {
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .day-block .day-name {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--soft);
+      font-weight: 700;
+    }
+    .micro-fields {
+      display: grid;
+      gap: 8px;
+    }
+    .micro-fields label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .micro-fields input {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.045);
+      color: var(--text);
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    .viz-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+    }
+    .viz-card {
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      padding: 16px;
+      min-height: 260px;
+      display: grid;
+      gap: 12px;
+    }
+    .viz-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .viz-head h4 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: -0.03em;
+    }
+    .viz-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .svg-wrap {
+      width: 100%;
+      min-height: 170px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      overflow: hidden;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--soft);
+      font-size: 0.84rem;
+    }
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend i {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .rail { display: grid; gap: 18px; }
+    .insight-list {
+      display: grid;
+      gap: 10px;
+      padding: 0 20px 20px;
+    }
+    .insight {
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+    }
+    .insight-kicker {
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .insight h4 {
+      margin: 8px 0 6px;
+      font-size: 0.98rem;
+      letter-spacing: -0.03em;
+    }
+    .insight p {
+      margin: 0;
+      color: var(--soft);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .atelier-body {
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+    }
+    .atelier-field {
+      display: grid;
+      gap: 7px;
+    }
+    .atelier-field label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .atelier-field input,
+    .atelier-field textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      padding: 12px 13px;
+      outline: none;
+    }
+    .atelier-field textarea { min-height: 118px; resize: vertical; }
+    .atelier-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .output {
+      min-height: 220px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      padding: 16px;
+      color: var(--soft);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+    .note-box {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      color: var(--soft);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .footer-strip {
+      margin-top: 18px;
+      padding: 0 20px 20px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(14,17,27,0.92);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.09);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(14px);
+      pointer-events: none;
+      transition: 0.18s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1480px) {
+      .layout {
+        grid-template-columns: minmax(250px, 290px) minmax(0, 1fr);
+      }
+      .rail {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 1220px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .hero-top,
+      .viz-grid,
+      .atelier-row,
+      .button-grid,
+      .rail,
+      .session-meta,
+      .metric-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .daily-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .set-row {
+        grid-template-columns: 62px 1fr 1fr 92px;
+      }
+      .set-row .note {
+        grid-column: 1 / -1;
+      }
+    }
+    @media (max-width: 860px) {
+      .app { padding: 14px; }
+      .topbar {
+        position: static;
+        border-radius: 24px;
+      }
+      .topbar,
+      .topbar-actions,
+      .hero-top,
+      .metric-grid,
+      .session-meta,
+      .daily-grid,
+      .viz-grid,
+      .atelier-row,
+      .button-grid,
+      .rail { grid-template-columns: 1fr !important; }
+      .topbar,
+      .topbar-actions { display: grid; }
+      .topbar-actions { justify-content: stretch; }
+      .week-control { justify-content: space-between; }
+      .set-row { grid-template-columns: 1fr 1fr; }
+      .set-index { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">AG</div>
+        <div class="brand-copy">
+          <div class="eyebrow">GitHub Pages ready · local-first · model-aware</div>
+          <h1>AiGains Atelier</h1>
+          <p>Training intelligence designed to look premium and work without a backend.</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="week-control">
+          <button class="icon-btn" id="prevWeekBtn" aria-label="Previous week">←</button>
+          <div class="week-label" id="weekLabel">Week 1</div>
+          <button class="icon-btn" id="nextWeekBtn" aria-label="Next week">→</button>
+        </div>
+        <button class="pill-btn" id="exportBtn">Export JSON</button>
+        <button class="pill-btn" id="importBtn">Import JSON</button>
+        <button class="primary-btn" id="saveBtn">Save snapshot</button>
+        <button class="danger-btn" id="resetWeekBtn">Clear week</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="stack" id="leftRail"></aside>
+
+      <main class="main-stack">
+        <section class="panel hero" id="heroPanel"></section>
+        <section class="panel" id="sessionPanel"></section>
+        <section class="panel" id="nutritionPanel"></section>
+      </main>
+
+      <aside class="rail" id="rightRail"></aside>
+    </div>
+  </div>
+
+  <input type="file" id="importInput" accept="application/json" hidden />
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const PROGRAM = [
+      {
+        id: 'pull',
+        day: 'Day 1',
+        title: 'Pull Strength–Hypertrophy',
+        focus: 'Back / Rear Delts / Biceps',
+        stress: 'Moderate–Heavy',
+        color: '#48dfc1',
+        description: 'Back-first session built to improve width and thickness without pulling from the floor.',
+        exercises: [
+          { name: 'Chest-Supported Row', scheme: '4 × 6–8', rest: '2–2.5 min', target: '1–2 RIR', cue: 'Add load when every set is clean at the top of the range.', sets: 4 },
+          { name: 'Lat Pulldown', scheme: '4 × 8–12', rest: '90 sec', target: '1 RIR', cue: 'Standardize grip and torso angle to make progression honest.', sets: 4 },
+          { name: 'Seated Cable Row', scheme: '3 × 8–12', rest: '90 sec', target: '1 RIR', cue: 'Brief pause in the contraction, no torso swing.', sets: 3 },
+          { name: 'Rear Delt Fly', scheme: '3 × 12–20', rest: '60 sec', target: '0–1 RIR', cue: 'Stay strict and light enough to keep traps out of it.', sets: 3 },
+          { name: 'EZ-Bar Curl', scheme: '3 × 6–10', rest: '90 sec', target: '1 RIR', cue: 'Own the bottom range and stop cheating the last third.', sets: 3 },
+          { name: 'Incline DB Curl', scheme: '3 × 10–14', rest: '60 sec', target: '0–1 RIR', cue: 'Stretch-focused, slower eccentric, smaller jumps.', sets: 3 }
+        ]
+      },
+      {
+        id: 'push',
+        day: 'Day 2',
+        title: 'Push Strength',
+        focus: 'Chest / Shoulders / Triceps',
+        stress: 'Heavy',
+        color: '#f7b95e',
+        description: 'Pressing-centered work with bench as the flagship lift, followed by highly repeatable hypertrophy support.',
+        exercises: [
+          { name: 'Barbell Bench Press', scheme: '4 × 4–6', rest: '2.5–3 min', target: '1–2 RIR', cue: 'Add 5 lb once every set hits 6 with clean bar speed.', sets: 4 },
+          { name: 'Seated DB Shoulder Press', scheme: '3 × 5–8', rest: '2–2.5 min', target: '1–2 RIR', cue: 'Progress slower here. Good reps before load jumps.', sets: 3 },
+          { name: 'Incline DB Press', scheme: '3 × 8–10', rest: '90 sec', target: '1–2 RIR', cue: 'Same bench angle each week. Avoid grinding.', sets: 3 },
+          { name: 'Cable Fly / Pec Deck', scheme: '3 × 10–15', rest: '75 sec', target: '0–1 RIR', cue: 'Tension over load. Chase a stable squeeze.', sets: 3 },
+          { name: 'Lateral Raise', scheme: '3 × 12–20', rest: '60 sec', target: '0–1 RIR', cue: 'Rep accumulation first. Micro-load later.', sets: 3 },
+          { name: 'Cable Pressdown', scheme: '3 × 10–12', rest: '60 sec', target: '0–1 RIR', cue: 'Keep shoulders quiet and elbows honest.', sets: 3 }
+        ]
+      },
+      {
+        id: 'legs',
+        day: 'Day 3',
+        title: 'Light Legs + Abs',
+        focus: 'Quads / Hams / Calves / Core',
+        stress: 'Light–Moderate',
+        color: '#9be15d',
+        description: 'Minimum-effective lower-body training that keeps you progressing without stealing recovery from the upper body.',
+        exercises: [
+          { name: 'Leg Press', scheme: '3 × 8–12', rest: '2 min', target: '1–2 RIR', cue: 'Standardize stance and depth before increasing load.', sets: 3 },
+          { name: 'Seated Leg Curl', scheme: '3 × 10–15', rest: '90 sec', target: '1 RIR', cue: 'Slow eccentric. Do not bounce the stretch.', sets: 3 },
+          { name: 'Leg Extension', scheme: '3 × 12–15', rest: '75 sec', target: '0–1 RIR', cue: 'Smooth lockout. Add reps before load.', sets: 3 },
+          { name: 'Calf Raise', scheme: '3 × 12–15', rest: '60 sec', target: '0–1 RIR', cue: 'Full stretch and real pauses at the bottom.', sets: 3 },
+          { name: 'Cable Crunch', scheme: '3 × 12–15', rest: '60 sec', target: '1 RIR', cue: 'Consistent ROM, not just weight movement.', sets: 3 },
+          { name: 'Ab Wheel / Hanging Knee Raise', scheme: '2 × 8–15', rest: '60 sec', target: '0–1 RIR', cue: 'Quality over momentum.', sets: 2 }
+        ]
+      },
+      {
+        id: 'upper',
+        day: 'Day 4',
+        title: 'Upper Hypertrophy',
+        focus: 'Chest / Back / Arms',
+        stress: 'Moderate',
+        color: '#9b7bff',
+        description: 'High-quality size work built around repeatable machine and cable patterns pushed close to failure.',
+        exercises: [
+          { name: 'Incline Machine Press', scheme: '3 × 8–12', rest: '90 sec', target: '0–1 RIR', cue: 'Repeatable setup is part of progression.', sets: 3 },
+          { name: 'Machine Press / Smith Bench', scheme: '3 × 8–12', rest: '90 sec', target: '0–1 RIR', cue: 'Do not let this become a grinder day.', sets: 3 },
+          { name: 'Neutral-Grip Pulldown', scheme: '3 × 10–12', rest: '90 sec', target: '1 RIR', cue: 'Earn range first, then load.', sets: 3 },
+          { name: 'Chest-Supported Machine Row', scheme: '3 × 10–12', rest: '90 sec', target: '1 RIR', cue: 'Scap-driven, not lumbar-driven.', sets: 3 },
+          { name: 'Cable Fly', scheme: '3 × 12–15', rest: '60 sec', target: '0–1 RIR', cue: 'Stay tension-biased the whole way.', sets: 3 },
+          { name: 'Cable Curl', scheme: '2 × 12–15', rest: '60 sec', target: '0–1 RIR', cue: 'Smooth reps only.', sets: 2 }
+        ]
+      },
+      {
+        id: 'arms',
+        day: 'Day 5',
+        title: 'Shoulders + Arms',
+        focus: 'Delts / Biceps / Triceps',
+        stress: 'Moderate',
+        color: '#6eb7ff',
+        description: 'Bias the muscles that show hardest when you lean out: lateral delts, biceps, and triceps.',
+        exercises: [
+          { name: 'Seated Machine Shoulder Press', scheme: '3 × 8–10', rest: '2 min', target: '1–2 RIR', cue: 'Stable setup every week.', sets: 3 },
+          { name: 'Cable Lateral Raise', scheme: '4 × 12–20', rest: '60 sec', target: '0–1 RIR', cue: 'Rep quality first. Micro-load later.', sets: 4 },
+          { name: 'Reverse Pec Deck', scheme: '3 × 12–20', rest: '60 sec', target: '0–1 RIR', cue: 'Keep traps out of the movement.', sets: 3 },
+          { name: 'Preacher Curl / EZ Curl', scheme: '3 × 8–12', rest: '90 sec', target: '1 RIR', cue: 'Use the same grip and pad height every time.', sets: 3 },
+          { name: 'Overhead Cable Extension', scheme: '3 × 10–14', rest: '75 sec', target: '0–1 RIR', cue: 'Long-head bias. Get the stretch.', sets: 3 },
+          { name: 'Cable Pressdown', scheme: '3 × 10–12', rest: '60 sec', target: '0–1 RIR', cue: 'Small jumps only.', sets: 3 }
+        ]
+      }
+    ];
+
+    const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const STORAGE_KEY = 'aigains_atelier_v1';
+
+    function makeExerciseLog(exercise) {
+      return {
+        name: exercise.name,
+        sets: Array.from({ length: exercise.sets }, () => ({ weight: '', reps: '', rpe: '', note: '' }))
+      };
+    }
+
+    function makeEmptyWeek(seedDemo = false) {
+      const base = {
+        overviewNote: '',
+        aiGoal: 'Get stronger while getting leaner with visible abs, better back development, and bench-focused progression.',
+        aiPriority: 'Prefer low-skill, repeatable lifts. Avoid squats and deadlifts. Bias chest, arms, and back improvement.',
+        weekly: WEEK_DAYS.reduce((acc, day) => {
+          acc[day] = { bw: '', calories: '', protein: '', steps: '', sleep: '', note: '' };
+          return acc;
+        }, {}),
+        sessions: PROGRAM.reduce((acc, day) => {
+          acc[day.id] = {
+            date: '',
+            bodyweight: '',
+            sleep: '',
+            readiness: '',
+            sessionNotes: '',
+            exercises: day.exercises.map(makeExerciseLog)
+          };
+          return acc;
+        }, {})
+      };
+
+      if (!seedDemo) return base;
+
+      const demoWeekly = {
+        Mon: { bw: '188.6', calories: '2320', protein: '198', steps: '8940', sleep: '7.5', note: 'Good energy' },
+        Tue: { bw: '188.2', calories: '2410', protein: '205', steps: '8110', sleep: '7.2', note: 'Bench felt sharp' },
+        Wed: { bw: '187.9', calories: '2290', protein: '196', steps: '10340', sleep: '6.9', note: 'Slight fatigue' },
+        Thu: { bw: '187.7', calories: '2360', protein: '201', steps: '9140', sleep: '7.8', note: 'Recovered well' },
+        Fri: { bw: '187.6', calories: '2440', protein: '208', steps: '8750', sleep: '7.1', note: 'Arm pump day' },
+        Sat: { bw: '187.4', calories: '2280', protein: '192', steps: '11280', sleep: '8.0', note: 'Long walk' },
+        Sun: { bw: '187.5', calories: '2350', protein: '197', steps: '7420', sleep: '7.6', note: 'Rest day' }
+      };
+      base.weekly = demoWeekly;
+      base.sessions.push.date = '04/15';
+      base.sessions.push.bodyweight = '188.2';
+      base.sessions.push.sleep = '7.2';
+      base.sessions.push.readiness = '4';
+      base.sessions.push.sessionNotes = 'Bench felt strong. Triceps fatigue showed up late.';
+      base.sessions.push.exercises[0].sets = [
+        { weight: '205', reps: '6', rpe: '8', note: 'Fast' },
+        { weight: '205', reps: '6', rpe: '8.5', note: '' },
+        { weight: '205', reps: '5', rpe: '9', note: 'Slight slowdown' },
+        { weight: '205', reps: '5', rpe: '9', note: '' }
+      ];
+      base.sessions.push.exercises[1].sets = [
+        { weight: '65', reps: '8', rpe: '8', note: '' },
+        { weight: '65', reps: '7', rpe: '8.5', note: '' },
+        { weight: '65', reps: '7', rpe: '9', note: '' }
+      ];
+      base.sessions.push.exercises[2].sets = [
+        { weight: '75', reps: '10', rpe: '8', note: '' },
+        { weight: '75', reps: '9', rpe: '8.5', note: '' },
+        { weight: '75', reps: '9', rpe: '9', note: '' }
+      ];
+      base.sessions.pull.date = '04/14';
+      base.sessions.pull.bodyweight = '188.6';
+      base.sessions.pull.sleep = '7.5';
+      base.sessions.pull.readiness = '4';
+      base.sessions.pull.sessionNotes = 'Back work felt better when chest support stayed locked in.';
+      base.sessions.pull.exercises[0].sets = [
+        { weight: '110', reps: '8', rpe: '8', note: '' },
+        { weight: '110', reps: '8', rpe: '8.5', note: '' },
+        { weight: '110', reps: '7', rpe: '9', note: '' },
+        { weight: '110', reps: '7', rpe: '9', note: '' }
+      ];
+      base.sessions.arms.date = '04/18';
+      base.sessions.arms.bodyweight = '187.6';
+      base.sessions.arms.sleep = '7.1';
+      base.sessions.arms.readiness = '3';
+      base.sessions.arms.sessionNotes = 'Lateral raises felt excellent; elbow a little tight on extensions.';
+      return base;
+    }
+
+    const defaultState = {
+      currentWeek: 1,
+      settings: {
+        endpoint: 'http://127.0.0.1:8082/v1/chat/completions',
+        model: 'qwen3.6-35b',
+        systemPrompt: 'You are a precise training analyst. Recommend next-session load, rep target, and whether to hold, push, or trim fatigue. Consider bodyweight trend, recovery, and the user preference for simple, repeatable lifts.'
+      },
+      weeks: {
+        1: makeEmptyWeek(true)
+      }
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(defaultState);
+        const parsed = JSON.parse(raw);
+        return sanitizeState(parsed);
+      } catch (err) {
+        console.error(err);
+        return structuredClone(defaultState);
+      }
+    }
+
+    function sanitizeState(candidate) {
+      const clean = structuredClone(defaultState);
+      if (candidate && typeof candidate === 'object') {
+        clean.currentWeek = Number(candidate.currentWeek) > 0 ? Number(candidate.currentWeek) : 1;
+        clean.settings = { ...clean.settings, ...(candidate.settings || {}) };
+        clean.weeks = { ...(candidate.weeks || {}) };
+      }
+      if (!clean.weeks[clean.currentWeek]) clean.weeks[clean.currentWeek] = makeEmptyWeek(false);
+      Object.keys(clean.weeks).forEach((weekNum) => {
+        clean.weeks[weekNum] = normalizeWeek(clean.weeks[weekNum]);
+      });
+      return clean;
+    }
+
+    function normalizeWeek(week) {
+      const template = makeEmptyWeek(false);
+      const merged = structuredClone(template);
+      if (week && typeof week === 'object') {
+        merged.overviewNote = week.overviewNote || '';
+        merged.aiGoal = week.aiGoal || template.aiGoal;
+        merged.aiPriority = week.aiPriority || template.aiPriority;
+        for (const d of WEEK_DAYS) {
+          merged.weekly[d] = { ...template.weekly[d], ...(week.weekly?.[d] || {}) };
+        }
+        for (const day of PROGRAM) {
+          const incoming = week.sessions?.[day.id] || {};
+          const targetSession = merged.sessions[day.id];
+          targetSession.date = incoming.date || '';
+          targetSession.bodyweight = incoming.bodyweight || '';
+          targetSession.sleep = incoming.sleep || '';
+          targetSession.readiness = incoming.readiness || '';
+          targetSession.sessionNotes = incoming.sessionNotes || '';
+          targetSession.exercises = day.exercises.map((exercise, idx) => {
+            const incomingExercise = incoming.exercises?.[idx] || {};
+            const sets = Array.from({ length: exercise.sets }, (_, setIdx) => ({
+              weight: incomingExercise.sets?.[setIdx]?.weight || '',
+              reps: incomingExercise.sets?.[setIdx]?.reps || '',
+              rpe: incomingExercise.sets?.[setIdx]?.rpe || '',
+              note: incomingExercise.sets?.[setIdx]?.note || ''
+            }));
+            return { name: exercise.name, sets };
+          });
+        }
+      }
+      return merged;
+    }
+
+    function saveState(showMessage = false) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (showMessage) toast('Saved locally');
+    }
+
+    function ensureWeek(weekNum) {
+      if (!state.weeks[weekNum]) state.weeks[weekNum] = makeEmptyWeek(false);
+      state.weeks[weekNum] = normalizeWeek(state.weeks[weekNum]);
+      return state.weeks[weekNum];
+    }
+
+    function currentWeekData() {
+      return ensureWeek(state.currentWeek);
+    }
+
+    function parsedNumber(value) {
+      const num = parseFloat(String(value).replace(/,/g, ''));
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function allLoggedSets(week) {
+      const sets = [];
+      PROGRAM.forEach((day) => {
+        const session = week.sessions[day.id];
+        session.exercises.forEach((exercise, exIndex) => {
+          exercise.sets.forEach((set, setIndex) => {
+            const reps = parsedNumber(set.reps);
+            const weight = parsedNumber(set.weight);
+            const rpe = parsedNumber(set.rpe);
+            if (reps !== null || weight !== null || rpe !== null || set.note) {
+              sets.push({ day, exercise: day.exercises[exIndex], set, reps, weight, rpe, setIndex });
+            }
+          });
+        });
+      });
+      return sets;
+    }
+
+    function average(values) {
+      const valid = values.filter((v) => Number.isFinite(v));
+      return valid.length ? valid.reduce((a,b) => a + b, 0) / valid.length : null;
+    }
+
+    function computeMetrics(week) {
+      const weekly = week.weekly;
+      const bodyweights = WEEK_DAYS.map((d) => parsedNumber(weekly[d].bw));
+      const sleep = WEEK_DAYS.map((d) => parsedNumber(weekly[d].sleep));
+      const calories = WEEK_DAYS.map((d) => parsedNumber(weekly[d].calories));
+      const protein = WEEK_DAYS.map((d) => parsedNumber(weekly[d].protein));
+      const steps = WEEK_DAYS.map((d) => parsedNumber(weekly[d].steps));
+      const sets = allLoggedSets(week);
+      const avgRpe = average(sets.map((s) => s.rpe));
+      const avgReadiness = average(PROGRAM.map((d) => parsedNumber(week.sessions[d.id].readiness)));
+      const avgBodyweight = average(bodyweights);
+      const avgSleep = average(sleep);
+      const avgCalories = average(calories);
+      const avgProtein = average(protein);
+      const avgSteps = average(steps);
+      const completedSessions = PROGRAM.filter((d) => {
+        const s = week.sessions[d.id];
+        return s.date || s.sessionNotes || s.exercises.some((ex) => ex.sets.some((set) => set.weight || set.reps || set.rpe || set.note));
+      }).length;
+      const firstBw = bodyweights.find((v) => v !== null);
+      const lastBw = [...bodyweights].reverse().find((v) => v !== null);
+      const bwDelta = firstBw !== undefined && lastBw !== undefined && firstBw !== null && lastBw !== null ? lastBw - firstBw : null;
+
+      let benchE1RM = null;
+      const benchSets = week.sessions.push.exercises?.[0]?.sets || [];
+      benchSets.forEach((set) => {
+        const wt = parsedNumber(set.weight);
+        const reps = parsedNumber(set.reps);
+        if (wt !== null && reps !== null) {
+          const e1rm = wt * (1 + reps / 30);
+          if (!benchE1RM || e1rm > benchE1RM) benchE1RM = e1rm;
+        }
+      });
+
+      const proteinTargetRatio = avgBodyweight && avgProtein ? avgProtein / avgBodyweight : null;
+      const sleepScore = avgSleep ? Math.min(100, Math.max(0, ((avgSleep - 5.5) / 2.5) * 100)) : 0;
+      const proteinScore = proteinTargetRatio ? Math.min(100, proteinTargetRatio / 0.95 * 100) : 0;
+      const readinessScore = avgReadiness ? (avgReadiness / 5) * 100 : 0;
+      const consistencyScore = (completedSessions / PROGRAM.length) * 100;
+      const recoveryScore = Math.round((sleepScore * 0.35) + (proteinScore * 0.25) + (readinessScore * 0.20) + (consistencyScore * 0.20));
+
+      return {
+        avgBodyweight,
+        avgSleep,
+        avgCalories,
+        avgProtein,
+        avgSteps,
+        avgRpe,
+        avgReadiness,
+        completedSessions,
+        totalLoggedSets: sets.length,
+        benchE1RM,
+        bwDelta,
+        proteinTargetRatio,
+        recoveryScore,
+        weekly,
+        bodyweights,
+        sleep,
+        steps,
+        calories,
+        protein,
+        sets
+      };
+    }
+
+    function compareBenchTrend() {
+      const current = computeMetrics(currentWeekData()).benchE1RM;
+      const prevWeek = state.weeks[state.currentWeek - 1] ? computeMetrics(state.weeks[state.currentWeek - 1]).benchE1RM : null;
+      if (current === null) return 'No bench data logged yet';
+      if (prevWeek === null) return 'First tracked benchmark week';
+      const delta = current - prevWeek;
+      if (Math.abs(delta) < 0.5) return 'Bench projection roughly flat vs last week';
+      return delta > 0 ? `Bench projection up ${delta.toFixed(1)} lb vs last week` : `Bench projection down ${Math.abs(delta).toFixed(1)} lb vs last week`;
+    }
+
+    function renderLeftRail() {
+      const week = currentWeekData();
+      const metrics = computeMetrics(week);
+      const navHtml = PROGRAM.map((day, index) => {
+        const session = week.sessions[day.id];
+        const filledSets = session.exercises.flatMap((ex) => ex.sets).filter((s) => s.weight || s.reps || s.rpe || s.note).length;
+        return `
+          <button class="nav-item ${index === 1 ? 'active' : ''}" data-scroll-target="session-${day.id}" style="border-left: 3px solid ${day.color};">
+            <div class="nav-top">
+              <span class="nav-kicker">${day.day}</span>
+              <span class="mini-chip">${filledSets} logged</span>
+            </div>
+            <div class="nav-title">${day.title}</div>
+            <div class="nav-focus">${day.focus}</div>
+            <div class="nav-chip-row">
+              <span class="mini-chip">${day.stress}</span>
+              <span class="mini-chip">${day.exercises.length} lifts</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('leftRail').innerHTML = `
+        <section class="panel">
+          <div class="sidebar-card">
+            <div class="section-title">
+              <h3>Program Architecture</h3>
+              <span class="mini-chip">5-day split</span>
+            </div>
+            <div class="subtle">Built for bench-focused strength, visible arms and shoulders, and stronger back development without forcing squat or deadlift complexity.</div>
+            <div class="split-stats">
+              <div class="mini-stat">
+                <div class="label">Sessions hit</div>
+                <div class="value">${metrics.completedSessions}/5</div>
+              </div>
+              <div class="mini-stat">
+                <div class="label">Logged sets</div>
+                <div class="value">${metrics.totalLoggedSets}</div>
+              </div>
+              <div class="mini-stat">
+                <div class="label">Avg sleep</div>
+                <div class="value">${formatMaybe(metrics.avgSleep, 1, ' hrs')}</div>
+              </div>
+              <div class="mini-stat">
+                <div class="label">Avg protein</div>
+                <div class="value">${formatMaybe(metrics.avgProtein, 0, ' g')}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="sidebar-card">
+            <div class="section-title">
+              <h3>Session Navigator</h3>
+              <span class="mini-chip">Jump to day</span>
+            </div>
+            <div class="nav-list">${navHtml}</div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="sidebar-card">
+            <div class="section-title">
+              <h3>Creative Direction</h3>
+              <span class="mini-chip">Award-take</span>
+            </div>
+            <div class="note-box">This version shifts the original table-heavy logging flow into a premium dashboard with fast scanning, higher visual hierarchy, and a dedicated AI analysis rail. It is still static hosting friendly.</div>
+          </div>
+        </section>
+      `;
+
+      document.querySelectorAll('[data-scroll-target]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(btn.dataset.scrollTarget);
+          target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    function renderHeroPanel() {
+      const week = currentWeekData();
+      const metrics = computeMetrics(week);
+      document.getElementById('heroPanel').innerHTML = `
+        <div class="hero-top">
+          <div class="hero-copy">
+            <div class="eyebrow">Week ${state.currentWeek} · Training intelligence suite</div>
+            <h2>Performance UI that looks expensive.</h2>
+            <p>This concept keeps the useful foundation of a structured split, RPE-aware logging, and AI prompt generation, then reframes it as a luxury analytics product you could actually ship on GitHub Pages and keep growing. The app is local-first, exportable, and ready for optional localhost model calls.</p>
+            <div class="hero-tag-row">
+              <span class="tag">Progressive overload aware</span>
+              <span class="tag">Prompt builder included</span>
+              <span class="tag">JSON import / export</span>
+              <span class="tag">Static hosting compatible</span>
+            </div>
+          </div>
+          <div class="hero-spotlight">
+            <div class="spotlight-card">
+              <div class="label">Flagship lift pulse</div>
+              <div class="value">${metrics.benchE1RM ? `${metrics.benchE1RM.toFixed(1)} lb e1RM` : 'No bench data yet'}</div>
+              <p>${compareBenchTrend()}</p>
+            </div>
+            <div class="spotlight-card">
+              <div class="label">Cut velocity</div>
+              <div class="value">${metrics.bwDelta !== null ? `${metrics.bwDelta.toFixed(1)} lb / week` : 'Awaiting bodyweight trend'}</div>
+              <p>${weightTrendMessage(metrics)}</p>
+            </div>
+            <div class="spotlight-card">
+              <div class="label">AI brief</div>
+              <div class="value">${truncate(week.aiGoal, 42)}</div>
+              <p>${truncate(week.aiPriority, 78)}</p>
+            </div>
+          </div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric-card accent-teal">
+            <div class="metric-label">Recovery score</div>
+            <div class="metric-value">${metrics.recoveryScore}</div>
+            <div class="metric-sub">Blended from sleep, readiness, protein adequacy, and session consistency.</div>
+          </div>
+          <div class="metric-card accent-violet">
+            <div class="metric-label">Bodyweight trend</div>
+            <div class="metric-value">${metrics.avgBodyweight ? `${metrics.avgBodyweight.toFixed(1)}` : '—'}</div>
+            <div class="metric-sub">Weekly average bodyweight. Delta: ${metrics.bwDelta !== null ? `${metrics.bwDelta.toFixed(1)} lb` : '—'}.</div>
+          </div>
+          <div class="metric-card accent-amber">
+            <div class="metric-label">Nutrition compliance</div>
+            <div class="metric-value">${metrics.avgProtein ? `${metrics.avgProtein.toFixed(0)}g` : '—'}</div>
+            <div class="metric-sub">Protein ratio: ${metrics.proteinTargetRatio ? `${metrics.proteinTargetRatio.toFixed(2)} g/lb` : '—'} · Calories: ${metrics.avgCalories ? metrics.avgCalories.toFixed(0) : '—'}.</div>
+          </div>
+          <div class="metric-card accent-rose">
+            <div class="metric-label">Session intensity</div>
+            <div class="metric-value">${metrics.avgRpe ? metrics.avgRpe.toFixed(1) : '—'}</div>
+            <div class="metric-sub">Average logged RPE across all completed work sets for the week.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSessionPanel() {
+      const week = currentWeekData();
+      document.getElementById('sessionPanel').innerHTML = `
+        <div class="panel-header">
+          <div>
+            <h2>Session Studio</h2>
+            <p>Every day lives in its own premium card, with enough structure to keep progression clean and enough whitespace to make daily use feel good.</p>
+          </div>
+          <span class="mini-chip">Local autosave</span>
+        </div>
+        <div class="session-deck">
+          ${PROGRAM.map((day) => renderSessionCard(day, week.sessions[day.id])).join('')}
+        </div>
+      `;
+    }
+
+    function renderSessionCard(day, session) {
+      return `
+        <article class="session-card" id="session-${day.id}">
+          <div class="session-header" style="border-left: 4px solid ${day.color};">
+            <div class="session-title-wrap">
+              <div class="session-day">${day.day}</div>
+              <h3 class="session-title">${day.title}</h3>
+              <div class="session-sub">${day.description}</div>
+            </div>
+            <div class="session-accent">
+              <div class="label">Stress profile</div>
+              <div class="value">${day.stress}</div>
+              <div class="subtle" style="margin-top:8px;">${day.focus}</div>
+            </div>
+          </div>
+          <div class="session-meta">
+            ${field(`Date`, `session.${day.id}.date`, session.date, 'MM/DD')}
+            ${field(`Bodyweight`, `session.${day.id}.bodyweight`, session.bodyweight, 'lbs')}
+            ${field(`Sleep`, `session.${day.id}.sleep`, session.sleep, 'hrs')}
+            ${field(`Readiness`, `session.${day.id}.readiness`, session.readiness, '1–5')}
+            ${textareaField(`Session note`, `session.${day.id}.sessionNotes`, session.sessionNotes, 'How did the day feel?')}
+          </div>
+          <div class="exercise-list">
+            ${day.exercises.map((exercise, exIndex) => renderExerciseCard(day, exercise, session.exercises[exIndex], exIndex)).join('')}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderExerciseCard(day, exercise, log, exIndex) {
+      return `
+        <section class="exercise-card">
+          <div class="exercise-top">
+            <div>
+              <h4 class="exercise-title">${exercise.name}</h4>
+              <div class="exercise-cue">${exercise.cue}</div>
+            </div>
+            <div class="exercise-schema">
+              <div class="main">${exercise.scheme}</div>
+              <div class="sub">${exercise.rest} · ${exercise.target}</div>
+            </div>
+          </div>
+          <div class="set-grid">
+            ${log.sets.map((set, setIndex) => `
+              <div class="set-row">
+                <div class="set-index">Set ${setIndex + 1}</div>
+                ${inlineField('Weight', `session.${day.id}.exercises.${exIndex}.sets.${setIndex}.weight`, set.weight, 'lb')}
+                ${inlineField('Reps', `session.${day.id}.exercises.${exIndex}.sets.${setIndex}.reps`, set.reps, 'reps')}
+                ${inlineField('RPE', `session.${day.id}.exercises.${exIndex}.sets.${setIndex}.rpe`, set.rpe, '7–10')}
+                <div class="inline-field note">
+                  <span>Note</span>
+                  <input data-path="session.${day.id}.exercises.${exIndex}.sets.${setIndex}.note" value="${escapeHtml(set.note)}" placeholder="bar speed, pump, pain, setup cue">
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderNutritionPanel() {
+      const week = currentWeekData();
+      const metrics = computeMetrics(week);
+      document.getElementById('nutritionPanel').innerHTML = `
+        <div class="panel-header">
+          <div>
+            <h2>Recovery + Nutrition Intelligence</h2>
+            <p>One screen for bodyweight, calories, protein, steps, and sleep. This is the context your local model needs before it should make training suggestions.</p>
+          </div>
+          <span class="mini-chip">Feeds AI analysis</span>
+        </div>
+        <div class="nutrition-grid">
+          <div class="daily-grid">
+            ${WEEK_DAYS.map((day) => renderDayBlock(day, week.weekly[day])).join('')}
+          </div>
+          <div class="viz-grid">
+            <div class="viz-card">
+              <div class="viz-head">
+                <div>
+                  <h4>Bodyweight + sleep trend</h4>
+                  <p>See cut pace and recovery together instead of guessing from memory.</p>
+                </div>
+                <span class="mini-chip">7-day view</span>
+              </div>
+              <div class="svg-wrap">${buildDualChart(metrics.bodyweights, metrics.sleep)}</div>
+              <div class="legend">
+                <span><i style="background:${getComputedStyle(document.documentElement).getPropertyValue('--teal')};"></i>Bodyweight</span>
+                <span><i style="background:${getComputedStyle(document.documentElement).getPropertyValue('--amber')};"></i>Sleep</span>
+              </div>
+            </div>
+            <div class="viz-card">
+              <div class="viz-head">
+                <div>
+                  <h4>Energy intake + steps</h4>
+                  <p>Check whether output is climbing while calories are falling.</p>
+                </div>
+                <span class="mini-chip">Compliance</span>
+              </div>
+              <div class="svg-wrap">${buildBarLineChart(metrics.calories, metrics.steps)}</div>
+              <div class="legend">
+                <span><i style="background:${getComputedStyle(document.documentElement).getPropertyValue('--violet')};"></i>Calories</span>
+                <span><i style="background:${getComputedStyle(document.documentElement).getPropertyValue('--sky')};"></i>Steps</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDayBlock(day, entry) {
+      return `
+        <div class="day-block">
+          <div class="day-name">${day}</div>
+          <div class="micro-fields">
+            ${microField('BW', `weekly.${day}.bw`, entry.bw, 'lb')}
+            ${microField('Calories', `weekly.${day}.calories`, entry.calories, 'kcal')}
+            ${microField('Protein', `weekly.${day}.protein`, entry.protein, 'g')}
+            ${microField('Steps', `weekly.${day}.steps`, entry.steps, 'steps')}
+            ${microField('Sleep', `weekly.${day}.sleep`, entry.sleep, 'hrs')}
+            ${microField('Note', `weekly.${day}.note`, entry.note, 'context')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRightRail() {
+      const week = currentWeekData();
+      const insights = generateInsights(week);
+      document.getElementById('rightRail').innerHTML = `
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>AI Atelier</h3>
+              <p>Prompt builder and optional localhost connector for an OpenAI-compatible local model server.</p>
+            </div>
+            <span class="mini-chip">Qwen-ready</span>
+          </div>
+          <div class="atelier-body">
+            <div class="atelier-row">
+              <div class="atelier-field">
+                <label>Endpoint</label>
+                <input id="endpointInput" value="${escapeHtml(state.settings.endpoint)}" placeholder="http://127.0.0.1:8082/v1/chat/completions">
+              </div>
+              <div class="atelier-field">
+                <label>Model name</label>
+                <input id="modelInput" value="${escapeHtml(state.settings.model)}" placeholder="qwen3.6-35b">
+              </div>
+            </div>
+            <div class="atelier-field">
+              <label>System prompt</label>
+              <textarea id="systemPromptInput">${escapeHtml(state.settings.systemPrompt)}</textarea>
+            </div>
+            <div class="atelier-row">
+              <div class="atelier-field">
+                <label>Main goal</label>
+                <textarea data-path="aiGoal">${escapeHtml(week.aiGoal)}</textarea>
+              </div>
+              <div class="atelier-field">
+                <label>Priority constraints</label>
+                <textarea data-path="aiPriority">${escapeHtml(week.aiPriority)}</textarea>
+              </div>
+            </div>
+            <div class="button-grid">
+              <button class="primary-btn" id="copyPromptBtn">Copy prompt</button>
+              <button class="ghost-btn" id="copyPayloadBtn">Copy JSON payload</button>
+              <button class="pill-btn" id="runAnalysisBtn">Run localhost analysis</button>
+              <button class="pill-btn" id="seedOutputBtn">Preview expected output</button>
+            </div>
+            <div class="note-box">Direct localhost calls from a GitHub Pages site work only if your browser and local server CORS settings allow it. The app still gives you a clean copy/paste prompt flow even if direct fetch is blocked.</div>
+            <div class="output" id="analysisOutput">No analysis run yet.
+
+Use “Copy prompt” for the safest workflow, or point this at your local OpenAI-compatible endpoint and try “Run localhost analysis.”</div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Autogenerated coach notes</h3>
+              <p>Baseline logic before an LLM touches anything.</p>
+            </div>
+            <span class="mini-chip">Heuristic layer</span>
+          </div>
+          <div class="insight-list">
+            ${insights.map((insight) => `
+              <div class="insight">
+                <div class="insight-kicker">${insight.kicker}</div>
+                <h4>${insight.title}</h4>
+                <p>${insight.body}</p>
+              </div>
+            `).join('')}
+          </div>
+          <div class="footer-strip">The point is not to replace your model. It is to give the model cleaner context and give you useful signals before you even ask it anything.</div>
+        </section>
+      `;
+
+      document.getElementById('copyPromptBtn').addEventListener('click', copyPrompt);
+      document.getElementById('copyPayloadBtn').addEventListener('click', copyPayload);
+      document.getElementById('runAnalysisBtn').addEventListener('click', runLocalAnalysis);
+      document.getElementById('seedOutputBtn').addEventListener('click', seedOutput);
+      document.getElementById('endpointInput').addEventListener('input', (e) => {
+        state.settings.endpoint = e.target.value;
+        debouncedSave();
+      });
+      document.getElementById('modelInput').addEventListener('input', (e) => {
+        state.settings.model = e.target.value;
+        debouncedSave();
+      });
+      document.getElementById('systemPromptInput').addEventListener('input', (e) => {
+        state.settings.systemPrompt = e.target.value;
+        debouncedSave();
+      });
+    }
+
+    function generateInsights(week) {
+      const metrics = computeMetrics(week);
+      const insights = [];
+      if (metrics.benchE1RM) {
+        insights.push({
+          kicker: 'Performance',
+          title: 'Bench is currently your cleanest flagship metric',
+          body: `Estimated 1RM is ${metrics.benchE1RM.toFixed(1)} lb. Keep bench progression rules stricter than the rest of the split and let accessories support it.`
+        });
+      } else {
+        insights.push({
+          kicker: 'Performance',
+          title: 'Your flagship metric should be bench projection',
+          body: 'Once you log one full push session, this rail can track projected progress week to week and tell you when recovery is starting to cap it.'
+        });
+      }
+
+      if (metrics.avgSleep !== null && metrics.avgSleep < 7) {
+        insights.push({
+          kicker: 'Recovery',
+          title: 'Sleep is the first obvious limiter',
+          body: `Average sleep is ${metrics.avgSleep.toFixed(1)} hours. That is enough to blunt progression even if protein is adequate.`
+        });
+      } else {
+        insights.push({
+          kicker: 'Recovery',
+          title: 'Sleep is at least good enough to support progress',
+          body: metrics.avgSleep !== null ? `Weekly average is ${metrics.avgSleep.toFixed(1)} hours. Stay there before trying to add more training stress.` : 'Once sleep is logged consistently, this block will start flagging risk earlier.'
+        });
+      }
+
+      if (metrics.proteinTargetRatio !== null && metrics.proteinTargetRatio < 0.75) {
+        insights.push({
+          kicker: 'Nutrition',
+          title: 'Protein intake is low for lean-out strength retention',
+          body: `You are averaging ${metrics.proteinTargetRatio.toFixed(2)} g/lb. Push that closer to 0.8–1.0 g/lb before cutting harder.`
+        });
+      } else {
+        insights.push({
+          kicker: 'Nutrition',
+          title: 'Protein is not the weak link right now',
+          body: metrics.proteinTargetRatio !== null ? `You are averaging ${metrics.proteinTargetRatio.toFixed(2)} g/lb, which is solid for strength retention during a cut.` : 'Log protein daily so the model can distinguish fatigue from under-fueling.'
+        });
+      }
+
+      if (metrics.bwDelta !== null && metrics.avgBodyweight !== null) {
+        const pct = Math.abs(metrics.bwDelta) / metrics.avgBodyweight * 100;
+        if (metrics.bwDelta < 0 && pct > 1.0) {
+          insights.push({
+            kicker: 'Cut pace',
+            title: 'Rate of loss may be a little too fast',
+            body: `Current pace is roughly ${pct.toFixed(2)}% of bodyweight per week. If performance slips, calories should be adjusted before volume gets hacked down.`
+          });
+        } else {
+          insights.push({
+            kicker: 'Cut pace',
+            title: 'Bodyweight trend looks manageable',
+            body: `Current pace is roughly ${pct.toFixed(2)}% per week. That is usually workable if lifts remain stable.`
+          });
+        }
+      }
+
+      return insights.slice(0, 4);
+    }
+
+    function buildPrompt() {
+      const week = currentWeekData();
+      const metrics = computeMetrics(week);
+      let prompt = `Goal: ${week.aiGoal}\n`;
+      prompt += `Constraints: ${week.aiPriority}\n`;
+      prompt += `Week: ${state.currentWeek}\n`;
+      prompt += `Recovery score: ${metrics.recoveryScore}\n`;
+      prompt += `Average bodyweight: ${formatMaybe(metrics.avgBodyweight, 1, ' lb')}\n`;
+      prompt += `Bodyweight delta: ${metrics.bwDelta !== null ? `${metrics.bwDelta.toFixed(1)} lb/week` : '—'}\n`;
+      prompt += `Average sleep: ${formatMaybe(metrics.avgSleep, 1, ' hrs')}\n`;
+      prompt += `Average calories: ${formatMaybe(metrics.avgCalories, 0, ' kcal')}\n`;
+      prompt += `Average protein: ${formatMaybe(metrics.avgProtein, 0, ' g')}\n`;
+      prompt += `Average steps: ${formatMaybe(metrics.avgSteps, 0, '')}\n\n`;
+      prompt += `Nutrition + recovery log:\n`;
+      WEEK_DAYS.forEach((day) => {
+        const entry = week.weekly[day];
+        prompt += `${day}: BW ${entry.bw || '—'}, Calories ${entry.calories || '—'}, Protein ${entry.protein || '—'}, Steps ${entry.steps || '—'}, Sleep ${entry.sleep || '—'}, Note ${entry.note || '—'}\n`;
+      });
+      prompt += `\nTraining sessions:\n`;
+      PROGRAM.forEach((day) => {
+        const session = week.sessions[day.id];
+        prompt += `\n${day.day} — ${day.title} (${day.focus})\n`;
+        prompt += `Date: ${session.date || '—'} | Bodyweight: ${session.bodyweight || '—'} | Sleep: ${session.sleep || '—'} | Readiness: ${session.readiness || '—'}\n`;
+        if (session.sessionNotes) prompt += `Session note: ${session.sessionNotes}\n`;
+        day.exercises.forEach((exercise, exIndex) => {
+          prompt += `- ${exercise.name} [${exercise.scheme}, ${exercise.target}]\n`;
+          session.exercises[exIndex].sets.forEach((set, idx) => {
+            if (set.weight || set.reps || set.rpe || set.note) {
+              prompt += `  Set ${idx + 1}: ${set.weight || '—'} lb × ${set.reps || '—'} reps @ RPE ${set.rpe || '—'}${set.note ? ` | ${set.note}` : ''}\n`;
+            }
+          });
+        });
+      });
+      prompt += `\nOutput format:\n`;
+      prompt += `1. Overall read on the week\n2. Recovery or nutrition warning flags\n3. Next-session targets for each logged exercise (add, hold, or reduce load + rep goal)\n4. Specific recommendation for bench progression\n5. Whether cut pace seems appropriate for continuing to gain or retain strength\n`;
+      return prompt;
+    }
+
+    function buildPayload() {
+      return {
+        model: state.settings.model,
+        temperature: 0.35,
+        messages: [
+          { role: 'system', content: state.settings.systemPrompt },
+          { role: 'user', content: buildPrompt() }
+        ]
+      };
+    }
+
+    async function copyPrompt() {
+      try {
+        await navigator.clipboard.writeText(buildPrompt());
+        toast('Prompt copied');
+      } catch {
+        toast('Clipboard failed');
+      }
+    }
+
+    async function copyPayload() {
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(buildPayload(), null, 2));
+        toast('Payload copied');
+      } catch {
+        toast('Clipboard failed');
+      }
+    }
+
+    function seedOutput() {
+      const metrics = computeMetrics(currentWeekData());
+      const output = `Overall read\nYou are trending in the right direction: bodyweight is moving down while your bench projection remains viable. Recovery is adequate but not overbuilt, so progression should stay selective rather than aggressive.\n\nPotential flags\n- If sleep drifts under 7 hours for another week, top-end pressing performance is the first place it will show.\n- Keep protein where it is or slightly higher before tightening calories further.\n\nNext-session examples\n- Bench press: hold 205 lb and aim to beat total reps before increasing load.\n- Seated DB shoulder press: hold load and try to add 1 rep across the session.\n- Incline DB press: keep load, push one set to the top of the range.\n- Cable fly: progress via reps, not load.\n\nBench-specific read\nBar speed is still good enough that you do not need a deload signal yet. Earn 4x6 before adding 5 lb.\n\nCut pace\nCurrent pace looks usable, but if back-to-back weeks show bench regression, raise calories slightly before changing the split.`;
+      document.getElementById('analysisOutput').textContent = output;
+      toast('Preview output injected');
+    }
+
+    async function runLocalAnalysis() {
+      const endpoint = state.settings.endpoint.trim();
+      const output = document.getElementById('analysisOutput');
+      output.textContent = 'Running localhost analysis...';
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildPayload())
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        const message = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || JSON.stringify(data, null, 2);
+        output.textContent = message;
+        toast('Local analysis complete');
+      } catch (err) {
+        output.textContent = `Direct local call failed.\n\nReason: ${err.message}\n\nThe app still works in copy/paste mode. Common causes are CORS, localhost endpoint mismatch, or using HTTPS GitHub Pages against a local server that is not exposing the right headers.`;
+        toast('Local analysis failed');
+      }
+    }
+
+    function handleInput(path, value) {
+      const week = currentWeekData();
+      if (path === 'aiGoal' || path === 'aiPriority') {
+        week[path] = value;
+        debouncedSave();
+        renderHeroPanel();
+        renderRightRail();
+        return;
+      }
+
+      const parts = path.split('.');
+      let target = week;
+      while (parts.length > 1) {
+        const key = parts.shift();
+        target = target[key];
+      }
+      target[parts[0]] = value;
+      debouncedSave();
+      renderHeroPanel();
+      renderLeftRail();
+      renderNutritionPanel();
+      renderRightRail();
+    }
+
+    function field(label, path, value, placeholder = '') {
+      return `
+        <div class="field">
+          <label>${label}</label>
+          <input data-path="${path}" value="${escapeHtml(value)}" placeholder="${placeholder}">
+        </div>
+      `;
+    }
+
+    function textareaField(label, path, value, placeholder = '') {
+      return `
+        <div class="field" style="grid-column: span 1;">
+          <label>${label}</label>
+          <textarea data-path="${path}" placeholder="${placeholder}">${escapeHtml(value)}</textarea>
+        </div>
+      `;
+    }
+
+    function inlineField(label, path, value, placeholder = '') {
+      return `
+        <div class="inline-field">
+          <span>${label}</span>
+          <input data-path="${path}" value="${escapeHtml(value)}" placeholder="${placeholder}">
+        </div>
+      `;
+    }
+
+    function microField(label, path, value, placeholder = '') {
+      return `
+        <label>${label}
+          <input data-path="${path}" value="${escapeHtml(value)}" placeholder="${placeholder}">
+        </label>
+      `;
+    }
+
+    function buildDualChart(bodyweights, sleep) {
+      const w = 520, h = 210, p = 22;
+      const bwVals = bodyweights.map((v) => v ?? null);
+      const slVals = sleep.map((v) => v ?? null);
+      const bwMin = Math.min(...bwVals.filter((v) => v !== null), 0);
+      const bwMax = Math.max(...bwVals.filter((v) => v !== null), 1);
+      const slMin = Math.min(...slVals.filter((v) => v !== null), 5);
+      const slMax = Math.max(...slVals.filter((v) => v !== null), 8);
+      const xStep = (w - p * 2) / 6;
+      const scale = (val, min, max) => {
+        if (max === min) return h / 2;
+        return h - p - ((val - min) / (max - min)) * (h - p * 2);
+      };
+      const makePath = (vals, min, max) => vals.map((v, i) => {
+        if (v === null) return null;
+        const x = p + i * xStep;
+        const y = scale(v, min, max);
+        return `${i === 0 || vals.slice(0, i).every((n) => n === null) ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+      }).filter(Boolean).join(' ');
+      const circles = (vals, min, max, color) => vals.map((v, i) => v === null ? '' : `<circle cx="${(p + i * xStep).toFixed(2)}" cy="${scale(v, min, max).toFixed(2)}" r="4.6" fill="${color}" />`).join('');
+      const labels = WEEK_DAYS.map((day, i) => `<text x="${p + i * xStep}" y="${h - 6}" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="11">${day}</text>`).join('');
+      const grid = [0.2, 0.5, 0.8].map((t) => {
+        const y = p + t * (h - p * 2);
+        return `<line x1="${p}" x2="${w - p}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,0.07)" stroke-dasharray="4 6" />`;
+      }).join('');
+      return `
+        <svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="bwGrad" x1="0" x2="1">
+              <stop offset="0%" stop-color="#48dfc1" stop-opacity="0.16" />
+              <stop offset="100%" stop-color="#48dfc1" stop-opacity="0.02" />
+            </linearGradient>
+          </defs>
+          ${grid}
+          <path d="${makePath(bwVals, bwMin, bwMax)}" fill="none" stroke="#48dfc1" stroke-width="3.5" stroke-linecap="round" />
+          <path d="${makePath(slVals, slMin, slMax)}" fill="none" stroke="#f7b95e" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 6" />
+          ${circles(bwVals, bwMin, bwMax, '#48dfc1')}
+          ${circles(slVals, slMin, slMax, '#f7b95e')}
+          ${labels}
+        </svg>
+      `;
+    }
+
+    function buildBarLineChart(calories, steps) {
+      const w = 460, h = 210, p = 22;
+      const calVals = calories.map((v) => v ?? 0);
+      const stepVals = steps.map((v) => v ?? null);
+      const calMax = Math.max(...calVals, 2500);
+      const stepMin = Math.min(...stepVals.filter((v) => v !== null), 5000);
+      const stepMax = Math.max(...stepVals.filter((v) => v !== null), 12000);
+      const xStep = (w - p * 2) / 7;
+      const barW = xStep * 0.62;
+      const scaleY = (v, max) => h - p - (v / max) * (h - p * 2);
+      const stepY = (v) => {
+        if (stepMax === stepMin) return h / 2;
+        return h - p - ((v - stepMin) / (stepMax - stepMin)) * (h - p * 2);
+      };
+      const bars = calVals.map((v, i) => {
+        const x = p + i * xStep + (xStep - barW) / 2;
+        const y = scaleY(v, calMax);
+        return `<rect x="${x}" y="${y}" width="${barW}" height="${h - p - y}" rx="10" fill="rgba(155,123,255,0.68)" />`;
+      }).join('');
+      const path = stepVals.map((v, i) => {
+        if (v === null) return null;
+        const x = p + i * xStep + xStep / 2;
+        const y = stepY(v);
+        return `${i === 0 || stepVals.slice(0, i).every((n) => n === null) ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+      }).filter(Boolean).join(' ');
+      const circles = stepVals.map((v, i) => v === null ? '' : `<circle cx="${(p + i * xStep + xStep / 2).toFixed(2)}" cy="${stepY(v).toFixed(2)}" r="4.2" fill="#6eb7ff" />`).join('');
+      const labels = WEEK_DAYS.map((day, i) => `<text x="${p + i * xStep + xStep / 2}" y="${h - 6}" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="11">${day}</text>`).join('');
+      return `
+        <svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">
+          <line x1="${p}" x2="${w - p}" y1="${h - p}" y2="${h - p}" stroke="rgba(255,255,255,0.08)" />
+          ${bars}
+          <path d="${path}" fill="none" stroke="#6eb7ff" stroke-width="3.2" stroke-linecap="round" />
+          ${circles}
+          ${labels}
+        </svg>
+      `;
+    }
+
+    function renderAll() {
+      document.getElementById('weekLabel').textContent = `Week ${state.currentWeek}`;
+      renderLeftRail();
+      renderHeroPanel();
+      renderSessionPanel();
+      renderNutritionPanel();
+      renderRightRail();
+      bindInputs();
+    }
+
+    function bindInputs() {
+      document.querySelectorAll('[data-path]').forEach((el) => {
+        const eventType = el.tagName === 'TEXTAREA' ? 'input' : 'input';
+        el.addEventListener(eventType, (e) => handleInput(el.dataset.path, e.target.value));
+      });
+    }
+
+    function formatMaybe(value, decimals = 0, suffix = '') {
+      return value === null || value === undefined ? '—' : `${value.toFixed(decimals)}${suffix}`;
+    }
+
+    function weightTrendMessage(metrics) {
+      if (metrics.bwDelta === null || metrics.avgBodyweight === null) return 'Log more daily weigh-ins to see whether the cut pace is productive.';
+      const pct = Math.abs(metrics.bwDelta) / metrics.avgBodyweight * 100;
+      if (metrics.bwDelta < 0 && pct > 1) return 'Aggressive enough that performance could be affected if recovery slips.';
+      if (metrics.bwDelta < 0) return 'Lean-out pace looks controlled and compatible with strength retention.';
+      return 'Bodyweight is flat or rising. Fine if strength is the priority, less ideal if leanness is urgent.';
+    }
+
+    function truncate(text, max) {
+      return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    let toastTimer;
+    function toast(message) {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    let saveTimer;
+    function debouncedSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => saveState(false), 350);
+    }
+
+    function exportState() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `aigains-atelier-week-${state.currentWeek}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('Exported JSON');
+    }
+
+    function importState(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          state = sanitizeState(JSON.parse(reader.result));
+          saveState(false);
+          renderAll();
+          toast('Imported JSON');
+        } catch {
+          toast('Import failed');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearWeek() {
+      if (!confirm(`Clear all data for week ${state.currentWeek}?`)) return;
+      state.weeks[state.currentWeek] = makeEmptyWeek(false);
+      saveState(false);
+      renderAll();
+      toast(`Week ${state.currentWeek} cleared`);
+    }
+
+    document.getElementById('prevWeekBtn').addEventListener('click', () => {
+      state.currentWeek = Math.max(1, state.currentWeek - 1);
+      ensureWeek(state.currentWeek);
+      saveState(false);
+      renderAll();
+    });
+
+    document.getElementById('nextWeekBtn').addEventListener('click', () => {
+      state.currentWeek += 1;
+      ensureWeek(state.currentWeek);
+      saveState(false);
+      renderAll();
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', () => saveState(true));
+    document.getElementById('exportBtn').addEventListener('click', exportState);
+    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importInput').click());
+    document.getElementById('resetWeekBtn').addEventListener('click', clearWeek);
+    document.getElementById('importInput').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) importState(file);
+      e.target.value = '';
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
