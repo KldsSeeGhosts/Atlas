@@ -159,7 +159,21 @@ export default function App() {
 
         <aside className="space-y-4 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:overflow-auto">
           <Card className="bg-surface-1/95">
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Current Week Snapshot</p>
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Current Week Snapshot</p>
+              <button
+                type="button"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-text-primary/15 bg-bg/55 text-text-secondary transition hover:bg-bg/85 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                onClick={() => setSettingsOpen(true)}
+                aria-label="Open settings"
+                title="Settings"
+              >
+                <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                  <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+                  <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a1.87 1.87 0 0 1-2.292 1.186l-.31-.093c-1.786-.53-3.29 1.0-2.761 2.773l.091.309a1.87 1.87 0 0 1-1.186 2.292l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a1.87 1.87 0 0 1 1.186 2.292l-.092.31c-.53 1.786 1 3.29 2.773 2.761l.309-.091a1.87 1.87 0 0 1 2.292 1.186l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a1.87 1.87 0 0 1 2.292-1.186l.31.092c1.786.53 3.29-1 2.761-2.773l-.091-.309a1.87 1.87 0 0 1 1.186-2.292l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a1.87 1.87 0 0 1-1.186-2.292l.092-.31c.53-1.786-1-3.29-2.773-2.761l-.309.091a1.87 1.87 0 0 1-2.292-1.186zM6.66 2.287c.246-.835 1.434-.835 1.68 0l.094.319a2.87 2.87 0 0 0 3.522 1.82l.31-.093c.832-.247 1.542.47 1.294 1.3l-.091.309a2.87 2.87 0 0 0 1.819 3.522l.319.094c.835.246.835 1.434 0 1.68l-.319.094a2.87 2.87 0 0 0-1.82 3.522l.093.31c.247.832-.47 1.542-1.3 1.294l-.309-.091a2.87 2.87 0 0 0-3.522 1.819l-.094.319c-.246.835-1.434.835-1.68 0l-.094-.319a2.87 2.87 0 0 0-3.522-1.82l-.31.093c-.832.247-1.542-.47-1.294-1.3l.091-.309a2.87 2.87 0 0 0-1.819-3.522l-.319-.094c-.835-.246-.835-1.434 0-1.68l.319-.094a2.87 2.87 0 0 0 1.82-3.522l-.093-.31c-.247-.832.47-1.542 1.3-1.294l.309.091A2.87 2.87 0 0 0 6.566 2.606z" />
+                </svg>
+              </button>
+            </div>
             <div className="mt-3 space-y-2 text-sm text-text-secondary">
               <div className="flex justify-between">
                 <span>Recovery</span>
@@ -178,17 +192,6 @@ export default function App() {
                 <strong className="text-text-primary">{formatMaybe(atlas.metrics.benchE1RM, 1, ' lb')}</strong>
               </div>
             </div>
-          </Card>
-
-          <Card className="bg-surface-1/95">
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Controls</p>
-            <Button className="mt-2 w-full" variant="quiet" onClick={() => setSettingsOpen(true)} aria-label="Open settings">
-              <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <circle cx="12" cy="12" r="3.5" />
-                <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7" />
-              </svg>
-              Settings
-            </Button>
           </Card>
 
           <Card className="bg-surface-1/95">
