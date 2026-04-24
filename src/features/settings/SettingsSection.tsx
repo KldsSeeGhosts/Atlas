@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Download, RotateCcw, Trash2, Upload } from 'lucide-react'
 import { Button, Card, FieldLabel, Input, SectionHeader, Select, Textarea } from '../../components/ui'
 import type { AtlasState, ThemeMode } from '../../types/atlas'
 
@@ -41,10 +42,13 @@ export function SettingsSection({
 
   return (
     <section id="atlas-settings" className="space-y-4">
-      <SectionHeader title="Settings" subtitle="Theme, endpoint configuration, and Atlas data controls." />
+      <SectionHeader title="Settings" subtitle="Appearance, AI endpoint defaults, and local Atlas data controls." />
 
       <Card className="space-y-3">
-        <h3 className="font-display text-xl text-text-primary">Appearance</h3>
+        <div>
+          <h3 className="text-base font-bold text-text-primary">Appearance</h3>
+          <p className="mt-1 text-sm font-medium text-text-secondary">Keep the light design optimized while preserving dark and system modes.</p>
+        </div>
         <div className="max-w-xs">
           <FieldLabel>Theme Mode</FieldLabel>
           <Select value={state.themeMode} onChange={(event) => onUpdateThemeMode(event.target.value as ThemeMode)}>
@@ -56,7 +60,10 @@ export function SettingsSection({
       </Card>
 
       <Card className="space-y-3">
-        <h3 className="font-display text-xl text-text-primary">Atlas Insights Defaults</h3>
+        <div>
+          <h3 className="text-base font-bold text-text-primary">AI Coach Defaults</h3>
+          <p className="mt-1 text-sm font-medium text-text-secondary">Used by direct endpoint analysis and generated OpenAI-compatible payloads.</p>
+        </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div>
             <FieldLabel>Endpoint URL</FieldLabel>
@@ -68,43 +75,36 @@ export function SettingsSection({
           </div>
           <div>
             <FieldLabel>Auth Token</FieldLabel>
-            <Input
-              value={state.settings.authToken}
-              onChange={(event) => onUpdateSettings({ authToken: event.target.value })}
-              placeholder="Optional"
-            />
+            <Input value={state.settings.authToken} onChange={(event) => onUpdateSettings({ authToken: event.target.value })} placeholder="Optional" />
           </div>
           <div>
             <FieldLabel>Timeout (ms)</FieldLabel>
-            <Input
-              value={String(state.settings.timeoutMs)}
-              onChange={(event) => onUpdateSettings({ timeoutMs: Number.parseInt(event.target.value || '0', 10) || 30000 })}
-            />
+            <Input value={String(state.settings.timeoutMs)} onChange={(event) => onUpdateSettings({ timeoutMs: Number.parseInt(event.target.value || '0', 10) || 30000 })} />
           </div>
           <div className="md:col-span-2">
             <FieldLabel>System Prompt</FieldLabel>
-            <Textarea
-              value={state.settings.systemPrompt}
-              rows={4}
-              onChange={(event) => onUpdateSettings({ systemPrompt: event.target.value })}
-            />
+            <Textarea value={state.settings.systemPrompt} rows={4} onChange={(event) => onUpdateSettings({ systemPrompt: event.target.value })} />
           </div>
         </div>
       </Card>
 
       <Card className="space-y-3">
-        <h3 className="font-display text-xl text-text-primary">Data Management</h3>
-        <p className="text-sm text-text-secondary">
-          Atlas saves data locally using <code>atlas.appState.v1</code> and can import legacy exports from
-          <code> aigains_atelier_v1</code>.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="primary" onClick={downloadExport}>
+        <div>
+          <h3 className="text-base font-bold text-text-primary">Data Management</h3>
+          <p className="mt-1 text-sm font-medium text-text-secondary">
+            Atlas saves locally with <code className="font-mono">atlas.appState.v1</code> and can import compatible JSON exports.
+          </p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button variant="primary" icon={Download} onClick={downloadExport}>
             Export Atlas JSON
           </Button>
-          <Button onClick={triggerImport}>Import JSON</Button>
+          <Button icon={Upload} onClick={triggerImport}>
+            Import JSON
+          </Button>
           <Button
             variant="quiet"
+            icon={RotateCcw}
             onClick={() => {
               if (window.confirm(`Clear week ${state.currentWeek}?`)) onClearCurrentWeek()
             }}
@@ -113,6 +113,7 @@ export function SettingsSection({
           </Button>
           <Button
             variant="danger"
+            icon={Trash2}
             onClick={() => {
               if (window.confirm('Reset all Atlas data? This cannot be undone.')) onResetAll()
             }}

@@ -1,32 +1,8 @@
+import { Flame, Footprints, Moon, Scale, Utensils } from 'lucide-react'
 import { WEEK_DAYS } from '../../data/program'
-import { Card, FieldLabel, Input, SectionHeader, Textarea } from '../../components/ui'
+import { Card, FieldLabel, Input, SectionHeader, Sparkline, StatCard, Textarea } from '../../components/ui'
 import { formatMaybe, type AtlasMetrics } from '../../lib/atlas'
 import type { Weekday, WeekLog } from '../../types/atlas'
-
-function linePath(values: Array<number | null>, width: number, height: number): string {
-  const valid = values.filter((value): value is number => value !== null)
-  if (!valid.length) return ''
-  const padding = 8
-  const min = Math.min(...valid)
-  const max = Math.max(...valid)
-  const step = (width - padding * 2) / Math.max(1, values.length - 1)
-
-  const scaleY = (value: number) => {
-    if (max === min) return height / 2
-    return height - padding - ((value - min) / (max - min)) * (height - padding * 2)
-  }
-
-  return values
-    .map((value, index) => {
-      if (value === null) return null
-      const x = padding + step * index
-      const y = scaleY(value)
-      const isFirst = values.slice(0, index).every((candidate) => candidate === null)
-      return `${isFirst ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`
-    })
-    .filter(Boolean)
-    .join(' ')
-}
 
 export function WeeklySection({
   week,
@@ -39,44 +15,59 @@ export function WeeklySection({
   onUpdateMetric: (day: Weekday, key: 'bw' | 'calories' | 'protein' | 'steps' | 'sleep' | 'note', value: string) => void
   onUpdateOverviewNote: (value: string) => void
 }) {
-  const bwPath = linePath(metrics.bodyweights, 300, 90)
-  const sleepPath = linePath(metrics.sleep, 300, 90)
+  const averageTiles = [
+    { label: 'Bodyweight', value: formatMaybe(metrics.avgBodyweight, 1, ' lb'), detail: '7-day avg', icon: Scale, tone: 'purple' as const },
+    { label: 'Calories', value: formatMaybe(metrics.avgCalories, 0, ' kcal'), detail: 'daily avg', icon: Flame, tone: 'coral' as const },
+    { label: 'Protein', value: formatMaybe(metrics.avgProtein, 0, ' g'), detail: 'daily avg', icon: Utensils, tone: 'green' as const },
+    { label: 'Steps', value: formatMaybe(metrics.avgSteps, 0, ''), detail: 'daily avg', icon: Footprints, tone: 'amber' as const },
+    { label: 'Sleep', value: formatMaybe(metrics.avgSleep, 1, ' h'), detail: 'nightly avg', icon: Moon, tone: 'blue' as const },
+  ]
 
   return (
     <section id="atlas-weekly-tracker" className="space-y-4">
-      <SectionHeader title="Weekly Tracker" subtitle="Bodyweight, nutrition, and recovery context that powers Atlas Insights." />
+      <SectionHeader title="Weekly Tracker" subtitle="Bodyweight, nutrition, recovery, and context for better recommendations." />
 
-      <Card>
-        <div className="grid gap-3 lg:grid-cols-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Weekly Averages</p>
-            <ul className="mt-2 space-y-1 text-sm text-text-secondary">
-              <li>Bodyweight: {formatMaybe(metrics.avgBodyweight, 1, ' lb')}</li>
-              <li>Calories: {formatMaybe(metrics.avgCalories, 0, ' kcal')}</li>
-              <li>Protein: {formatMaybe(metrics.avgProtein, 0, ' g')}</li>
-              <li>Steps: {formatMaybe(metrics.avgSteps, 0, '')}</li>
-              <li>Sleep: {formatMaybe(metrics.avgSleep, 1, ' hrs')}</li>
-            </ul>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {averageTiles.map((tile) => {
+          const Icon = tile.icon
+          return (
+            <StatCard key={tile.label} label={tile.label} value={tile.value} detail={tile.detail} tone={tile.tone}>
+              <div className="ml-auto grid h-11 w-11 place-items-center rounded-full bg-current/10">
+                <Icon className="h-5 w-5" />
+              </div>
+            </StatCard>
+          )
+        })}
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <Card>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-bold text-text-secondary">Bodyweight Trend</p>
+            <span className="text-xs font-bold text-accent-secondary">{formatMaybe(metrics.bwDelta, 1, ' lb')}</span>
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Trend: Bodyweight</p>
-            <svg viewBox="0 0 300 90" width="100%" height="90">
-              <path d={bwPath} fill="none" stroke="rgb(204,120,92)" strokeWidth="3" strokeLinecap="round" />
-            </svg>
+          <div className="mt-4">
+            <Sparkline values={metrics.bodyweights} color="rgb(var(--color-accent-secondary))" height={96} />
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Trend: Sleep</p>
-            <svg viewBox="0 0 300 90" width="100%" height="90">
-              <path d={sleepPath} fill="none" stroke="rgb(97,170,242)" strokeWidth="3" strokeLinecap="round" />
-            </svg>
+        </Card>
+        <Card>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-bold text-text-secondary">Sleep Trend</p>
+            <span className="text-xs font-bold text-focus">{formatMaybe(metrics.avgSleep, 1, ' h avg')}</span>
           </div>
-        </div>
-      </Card>
+          <div className="mt-4">
+            <Sparkline values={metrics.sleep} color="rgb(var(--color-focus))" height={96} />
+          </div>
+        </Card>
+      </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {WEEK_DAYS.map((day) => (
-          <Card key={day} className="space-y-2">
-            <h3 className="font-semibold text-text-primary">{day}</h3>
+          <Card key={day} className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-base font-bold text-text-primary">{day}</h3>
+              <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-bold text-text-secondary">Daily log</span>
+            </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <div>
                 <FieldLabel>Bodyweight</FieldLabel>
@@ -84,44 +75,23 @@ export function WeeklySection({
               </div>
               <div>
                 <FieldLabel>Calories</FieldLabel>
-                <Input
-                  value={week.weekly[day].calories}
-                  onChange={(event) => onUpdateMetric(day, 'calories', event.target.value)}
-                  placeholder="kcal"
-                />
+                <Input value={week.weekly[day].calories} onChange={(event) => onUpdateMetric(day, 'calories', event.target.value)} placeholder="kcal" />
               </div>
               <div>
                 <FieldLabel>Protein</FieldLabel>
-                <Input
-                  value={week.weekly[day].protein}
-                  onChange={(event) => onUpdateMetric(day, 'protein', event.target.value)}
-                  placeholder="g"
-                />
+                <Input value={week.weekly[day].protein} onChange={(event) => onUpdateMetric(day, 'protein', event.target.value)} placeholder="g" />
               </div>
               <div>
                 <FieldLabel>Steps</FieldLabel>
-                <Input
-                  value={week.weekly[day].steps}
-                  onChange={(event) => onUpdateMetric(day, 'steps', event.target.value)}
-                  placeholder="steps"
-                />
+                <Input value={week.weekly[day].steps} onChange={(event) => onUpdateMetric(day, 'steps', event.target.value)} placeholder="steps" />
               </div>
               <div className="sm:col-span-2">
                 <FieldLabel>Sleep</FieldLabel>
-                <Input
-                  value={week.weekly[day].sleep}
-                  onChange={(event) => onUpdateMetric(day, 'sleep', event.target.value)}
-                  placeholder="hrs"
-                />
+                <Input value={week.weekly[day].sleep} onChange={(event) => onUpdateMetric(day, 'sleep', event.target.value)} placeholder="hrs" />
               </div>
               <div className="sm:col-span-2">
                 <FieldLabel>Daily Note</FieldLabel>
-                <Textarea
-                  value={week.weekly[day].note}
-                  onChange={(event) => onUpdateMetric(day, 'note', event.target.value)}
-                  rows={2}
-                  placeholder="Context"
-                />
+                <Textarea value={week.weekly[day].note} onChange={(event) => onUpdateMetric(day, 'note', event.target.value)} rows={2} placeholder="Context" />
               </div>
             </div>
           </Card>
@@ -130,12 +100,7 @@ export function WeeklySection({
 
       <Card>
         <FieldLabel>Weekly Context Note</FieldLabel>
-        <Textarea
-          value={week.overviewNote}
-          onChange={(event) => onUpdateOverviewNote(event.target.value)}
-          rows={3}
-          placeholder="What happened this week that may affect interpretation?"
-        />
+        <Textarea value={week.overviewNote} onChange={(event) => onUpdateOverviewNote(event.target.value)} rows={3} placeholder="What happened this week that may affect interpretation?" />
       </Card>
     </section>
   )
