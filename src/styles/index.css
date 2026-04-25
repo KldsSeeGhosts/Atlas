@@ -47,6 +47,7 @@ html,
 body,
 #root {
   min-height: 100%;
+  scroll-padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
 }
 
 body {
@@ -56,7 +57,10 @@ body {
   color: rgb(var(--color-text-primary));
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   text-rendering: geometricPrecision;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
 }
 
 ::selection {
@@ -68,6 +72,12 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
 }
 
 button {
@@ -83,7 +93,47 @@ svg {
 }
 
 @media (max-width: 767px) {
+  html,
+  body,
+  #root {
+    min-height: 100dvh;
+  }
+
   body {
     background: rgb(var(--color-surface-1));
   }
+}
+
+.mobile-nav-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-content-safe {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+
+.toast-safe {
+  bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.ios-sheet-safe {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.ios-momentum {
+  -webkit-overflow-scrolling: touch;
+}
+
+.ios-wheel-mask {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 24%, black 76%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 24%, black 76%, transparent 100%);
 }

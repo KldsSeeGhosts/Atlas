@@ -130,7 +130,7 @@ function MobileNav({
   onSelect: (target: NavTarget) => void
 }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-text-primary/10 bg-surface-1/95 px-2 pb-2 pt-1 shadow-warm backdrop-blur md:hidden">
+    <nav className="mobile-nav-safe fixed inset-x-0 bottom-0 z-40 border-t border-text-primary/10 bg-surface-1/95 px-2 pt-1 shadow-warm backdrop-blur md:hidden">
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
@@ -344,7 +344,7 @@ export default function App() {
             </div>
           </header>
 
-          <div className="grid min-w-0 gap-4 px-4 py-4 pb-24 md:px-6 md:pb-6 xl:grid-cols-[minmax(0,1fr),300px] 2xl:grid-cols-[minmax(0,1fr),320px]">
+          <div className="mobile-content-safe grid min-w-0 gap-4 px-4 py-4 md:px-6 md:pb-6 xl:grid-cols-[minmax(0,1fr),300px] 2xl:grid-cols-[minmax(0,1fr),320px]">
             <main className="min-w-0 space-y-4">
               {atlas.activeView === 'logging' ? (
                 <TrainingLogSection

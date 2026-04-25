@@ -349,7 +349,7 @@ export function parseImport(raw: string): AtlasState {
 }
 
 function isSetLogged(set: SetLog): boolean {
-  return Boolean(set.weight || set.reps || set.rpe || set.note)
+  return Boolean(set.weight || set.reps || set.rpe)
 }
 
 export function isSessionLogged(session: SessionLog): boolean {

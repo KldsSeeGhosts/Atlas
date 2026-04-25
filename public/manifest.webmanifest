@@ -1,0 +1,17 @@
+{
+  "name": "Atlas Training Intelligence",
+  "short_name": "Atlas",
+  "description": "Local-first training, recovery, nutrition, and AI analysis workspace.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F4",
+  "theme_color": "#FAF8F4",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

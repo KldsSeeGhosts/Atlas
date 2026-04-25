@@ -7,6 +7,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { cx } from '../lib/cx'
 
@@ -115,7 +116,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return (
     <input
       className={cx(
-        'w-full rounded-xl border border-text-primary/10 bg-surface-2 px-3 py-2.5 text-sm font-medium text-text-primary outline-none transition placeholder:text-text-secondary/65 focus-visible:border-focus/40 focus-visible:bg-surface-1 focus-visible:ring-2 focus-visible:ring-focus/20',
+        'w-full rounded-xl border border-text-primary/10 bg-surface-2 px-3 py-2.5 text-base font-medium text-text-primary outline-none transition placeholder:text-text-secondary/65 focus-visible:border-focus/40 focus-visible:bg-surface-1 focus-visible:ring-2 focus-visible:ring-focus/20 md:text-sm',
         className,
       )}
       {...props}
@@ -127,7 +128,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
   return (
     <textarea
       className={cx(
-        'w-full rounded-xl border border-text-primary/10 bg-surface-2 px-3 py-2.5 text-sm font-medium text-text-primary outline-none transition placeholder:text-text-secondary/65 focus-visible:border-focus/40 focus-visible:bg-surface-1 focus-visible:ring-2 focus-visible:ring-focus/20',
+        'w-full rounded-xl border border-text-primary/10 bg-surface-2 px-3 py-2.5 text-base font-medium text-text-primary outline-none transition placeholder:text-text-secondary/65 focus-visible:border-focus/40 focus-visible:bg-surface-1 focus-visible:ring-2 focus-visible:ring-focus/20 md:text-sm',
         className,
       )}
       {...props}
@@ -139,7 +140,7 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
   return (
     <select
       className={cx(
-        'w-full rounded-xl border border-text-primary/10 bg-surface-2 px-3 py-2.5 text-sm font-medium text-text-primary outline-none transition focus-visible:border-focus/40 focus-visible:bg-surface-1 focus-visible:ring-2 focus-visible:ring-focus/20',
+        'w-full rounded-xl border border-text-primary/10 bg-surface-2 px-3 py-2.5 text-base font-medium text-text-primary outline-none transition focus-visible:border-focus/40 focus-visible:bg-surface-1 focus-visible:ring-2 focus-visible:ring-focus/20 md:text-sm',
         className,
       )}
       {...props}
@@ -305,13 +306,138 @@ export function ProgressBars({
   )
 }
 
+function formatWheelValue(value: number, step: number): string {
+  if (Number.isInteger(step)) return String(value)
+  return Number.isInteger(value) ? String(value) : value.toFixed(1)
+}
+
+export function InlineWheelField({
+  value,
+  min,
+  max,
+  step,
+  unit,
+  onCommit,
+}: {
+  value: string
+  min: number
+  max: number
+  step: number
+  unit?: string
+  onCommit: (value: string) => void
+}) {
+  const rowHeight = 36
+  const options = useMemo(() => {
+    const count = Math.floor((max - min) / step)
+    return Array.from({ length: count + 1 }, (_, index) => Number((min + index * step).toFixed(2)))
+  }, [max, min, step])
+  const scrollerRef = useRef<HTMLDivElement | null>(null)
+  const settleTimerRef = useRef<number | null>(null)
+  const numericValue = Number.parseFloat(value)
+  const selected = Number.isFinite(numericValue) ? numericValue : null
+  const selectedIndex =
+    selected === null
+      ? -1
+      : options.reduce((bestIndex, option, index) => {
+          if (bestIndex === -1) return index
+          return Math.abs(option - selected) < Math.abs(options[bestIndex] - selected) ? index : bestIndex
+        }, -1)
+  const [displayIndex, setDisplayIndex] = useState(Math.max(0, selectedIndex))
+
+  const nearestIndexForScroll = useCallback(
+    (scrollTop: number) => Math.max(0, Math.min(options.length - 1, Math.round(scrollTop / rowHeight))),
+    [options.length],
+  )
+
+  const settleScroll = useCallback(() => {
+    const node = scrollerRef.current
+    if (!node) return
+    const nextIndex = nearestIndexForScroll(node.scrollTop)
+    const nextValue = formatWheelValue(options[nextIndex], step)
+    setDisplayIndex(nextIndex)
+    node.scrollTo({ top: nextIndex * rowHeight, behavior: 'smooth' })
+    if (nextValue !== value) onCommit(nextValue)
+  }, [nearestIndexForScroll, onCommit, options, step, value])
+
+  useEffect(() => {
+    const node = scrollerRef.current
+    if (!node || selectedIndex < 0) return
+    setDisplayIndex(selectedIndex)
+    node.scrollTop = selectedIndex * rowHeight
+  }, [rowHeight, selectedIndex])
+
+  useEffect(() => {
+    const node = scrollerRef.current
+    if (!node) return
+    node.addEventListener('scrollend', settleScroll)
+    return () => node.removeEventListener('scrollend', settleScroll)
+  }, [settleScroll])
+
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current !== null) window.clearTimeout(settleTimerRef.current)
+    }
+  }, [])
+
+  return (
+    <div className="relative h-[92px] overflow-hidden rounded-xl border border-text-primary/10 bg-surface-2 shadow-[inset_0_1px_0_rgb(var(--color-surface-1))]">
+      <div className="pointer-events-none absolute inset-x-1.5 top-1/2 z-10 h-9 -translate-y-1/2 rounded-lg bg-surface-1/70 shadow-[inset_0_0_0_1px_rgb(var(--color-text-primary)/0.04)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-7 bg-gradient-to-b from-surface-2 to-surface-2/0" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-7 bg-gradient-to-t from-surface-2 to-surface-2/0" />
+      <div
+        ref={scrollerRef}
+        className="ios-momentum ios-wheel-mask no-scrollbar h-full snap-y snap-mandatory overflow-y-auto px-1 py-7"
+        onScroll={() => {
+          const node = scrollerRef.current
+          if (node) setDisplayIndex(nearestIndexForScroll(node.scrollTop))
+          if (settleTimerRef.current !== null) window.clearTimeout(settleTimerRef.current)
+          settleTimerRef.current = window.setTimeout(settleScroll, 110)
+        }}
+        aria-label="Inline number selector"
+      >
+        {options.map((option, index) => {
+          const optionText = formatWheelValue(option, step)
+          const distance = Math.abs(index - displayIndex)
+          const active = index === displayIndex
+          const rowStyle =
+            distance === 0
+              ? 'scale-110 text-text-primary'
+              : distance === 1
+                ? 'text-text-secondary/70'
+                : distance === 2
+                  ? 'text-text-secondary/40'
+                  : 'text-text-secondary/20'
+          return (
+            <button
+              key={optionText}
+              type="button"
+              onClick={() => {
+                setDisplayIndex(index)
+                onCommit(optionText)
+                scrollerRef.current?.scrollTo({ top: index * rowHeight, behavior: 'smooth' })
+              }}
+              className={cx(
+                'relative z-20 flex h-9 w-full snap-center items-center justify-center border-0 text-lg font-bold leading-none transition will-change-transform',
+                active ? 'scale-110 text-text-primary' : rowStyle,
+              )}
+            >
+              {optionText}
+              {active && unit ? <span className="ml-0.5 text-[10px] font-bold text-text-secondary">{unit}</span> : null}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export function ToastViewport({
   toasts,
 }: {
   toasts: Array<{ id: number; tone: 'info' | 'success' | 'error'; message: string }>
 }) {
   return (
-    <div className="pointer-events-none fixed bottom-20 right-4 z-50 flex max-w-[320px] flex-col gap-2 md:bottom-4">
+    <div className="toast-safe pointer-events-none fixed right-4 z-50 flex max-w-[320px] flex-col gap-2 md:bottom-4">
       {toasts.map((toast) => (
         <div
           key={toast.id}
